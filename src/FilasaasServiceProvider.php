@@ -122,8 +122,8 @@ class FilasaasServiceProvider extends PackageServiceProvider
     {
         return [
             // AlpineComponent::make('filasaas', __DIR__ . '/../resources/dist/components/filasaas.js'),
-            Css::make('filasaas-styles', __DIR__ . '/../resources/dist/filasaas.css'),
-            Js::make('filasaas-scripts', __DIR__ . '/../resources/dist/filasaas.js'),
+            // Css::make('filasaas-styles', __DIR__ . '/../resources/dist/filasaas.css'),
+            // Js::make('filasaas-scripts', __DIR__ . '/../resources/dist/filasaas.js'),
         ];
     }
 
