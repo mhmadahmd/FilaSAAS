@@ -66,11 +66,23 @@ class PaymentGatewayManager
         $available = [];
 
         foreach ($allowedGateways as $gatewayIdentifier) {
-            if ($this->isGatewayAvailable($gatewayIdentifier, $plan)) {
-                $gateway = $this->get($gatewayIdentifier);
-                if ($gateway) {
-                    $available[$gatewayIdentifier] = $gateway;
-                }
+            $gateway = $this->get($gatewayIdentifier);
+            
+            // Skip if gateway is not registered
+            if (! $gateway) {
+                continue;
+            }
+
+            // For cash gateway, always include if it's in allowed gateways
+            if ($gatewayIdentifier === 'cash') {
+                $available[$gatewayIdentifier] = $gateway;
+                continue;
+            }
+
+            // For other gateways, check if they're enabled in config
+            $configKey = "filasaas.gateways.{$gatewayIdentifier}.enabled";
+            if (config($configKey, false)) {
+                $available[$gatewayIdentifier] = $gateway;
             }
         }
 
