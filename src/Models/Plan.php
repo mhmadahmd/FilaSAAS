@@ -108,6 +108,13 @@ class Plan extends Model implements Sortable
 
     public function getAllowedGateways(): array
     {
-        return $this->allowed_payment_gateways ?? ['cash', 'stripe', 'paypal'];
+        $gateways = $this->allowed_payment_gateways;
+        
+        // If null or empty array, return default gateways
+        if (empty($gateways)) {
+            return ['cash', 'stripe', 'paypal'];
+        }
+        
+        return $gateways;
     }
 }

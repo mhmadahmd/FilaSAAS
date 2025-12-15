@@ -21,27 +21,43 @@ class PaymentGatewayManager
 
     protected function registerDefaultGateways(Application $app): void
     {
-        // Register Cash Gateway
+        // Register Cash Gateway (always register if enabled, default is true)
         if (config('filasaas.gateways.cash.enabled', true)) {
-            $this->register('cash', new CashGateway);
+            if (! $this->get('cash')) {
+                $this->register('cash', new CashGateway);
+            }
         }
 
         // Register Stripe Gateway
         if (config('filasaas.gateways.stripe.enabled', false)) {
-            try {
-                $this->register('stripe', new StripeGateway);
-            } catch (\Exception $e) {
-                // Stripe not configured, skip
+            if (! $this->get('stripe')) {
+                try {
+                    $this->register('stripe', new StripeGateway);
+                } catch (\Exception $e) {
+                    // Stripe not configured, skip
+                }
             }
         }
 
         // Register PayPal Gateway
         if (config('filasaas.gateways.paypal.enabled', false)) {
-            try {
-                $this->register('paypal', new PayPalGateway);
-            } catch (\Exception $e) {
-                // PayPal not configured, skip
+            if (! $this->get('paypal')) {
+                try {
+                    $this->register('paypal', new PayPalGateway);
+                } catch (\Exception $e) {
+                    // PayPal not configured, skip
+                }
             }
+        }
+    }
+
+    /**
+     * Ensure gateways are registered (useful if called before full initialization)
+     */
+    protected function ensureGatewaysRegistered(): void
+    {
+        if (empty($this->gateways)) {
+            $this->registerDefaultGateways(app());
         }
     }
 
@@ -62,10 +78,22 @@ class PaymentGatewayManager
 
     public function getAvailableForPlan(Plan $plan): array
     {
+        // Ensure gateways are registered
+        $this->ensureGatewaysRegistered();
+
         $allowedGateways = $plan->getAllowedGateways();
         $available = [];
 
+        // If no gateways are allowed, return empty array
+        if (empty($allowedGateways) || ! is_array($allowedGateways)) {
+            return $available;
+        }
+
         foreach ($allowedGateways as $gatewayIdentifier) {
+            if (empty($gatewayIdentifier)) {
+                continue;
+            }
+
             $gateway = $this->get($gatewayIdentifier);
             
             // Skip if gateway is not registered
