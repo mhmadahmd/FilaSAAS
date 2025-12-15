@@ -106,6 +106,11 @@ class FilasaasServiceProvider extends PackageServiceProvider
             }
         }
 
+        // Publish Seeder
+        $this->publishes([
+            __DIR__ . '/../database/seeders/FilasaasSeeder.php' => database_path('seeders/FilasaasSeeder.php'),
+        ], 'filasaas-seeder');
+
         // Testing
         Testable::mixin(new TestsFilasaas);
     }
